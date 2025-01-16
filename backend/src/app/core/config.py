@@ -49,17 +49,18 @@ class Settings(BaseSettings):
     # LLM CONFIG
     dimensions: int = 1536
     embedding_provider: str = "openai"
-    embedding_model: str = "text-embedding-3-small"
+    embedding_model: str = "text-embedding-3-large"
     llm_provider: str = "openai"
-    llm_model: str = "gpt-4o"
+    llm_model: str = "claude-3-5-sonnet-20241022"
     openai_api_key: Optional[str] = None
+    openai_base_url: Optional[str] = None
 
     # VECTOR DATABASE CONFIG
     vector_db_provider: str = "milvus"
     index_name: str = "milvus"
 
     # MILVUS CONFIG
-    milvus_db_uri: str = "./milvus_demo.db"
+    milvus_db_uri: str = "http://127.0.0.1:19530"
     milvus_db_token: str = "root:Milvus"
 
     # QDRANT CONFIG
@@ -82,6 +83,7 @@ class Settings(BaseSettings):
         case_sensitive=False,
         extra="ignore",
         env_nested_delimiter="_",
+        env_file_only=True,
     )
 
 

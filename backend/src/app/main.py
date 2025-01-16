@@ -6,6 +6,8 @@ from typing import Any, Dict
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import uvicorn
+
 from app.api.v1.api import api_router
 from app.core.config import Settings, get_settings
 
@@ -40,3 +42,12 @@ async def pong(settings: Settings = Depends(get_settings)) -> Dict[str, Any]:
         "environment": settings.environment,
         "testing": settings.testing,
     }
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "app.main:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True,
+    )

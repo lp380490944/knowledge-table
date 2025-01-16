@@ -18,7 +18,7 @@ class OpenAICompletionService(CompletionService):
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         if settings.openai_api_key:
-            self.client = OpenAI(api_key=settings.openai_api_key)
+            self.client = OpenAI(api_key=settings.openai_api_key,base_url=settings.openai_base_url)
         else:
             self.client = None  # type: ignore
             logger.warning(
@@ -35,30 +35,25 @@ class OpenAICompletionService(CompletionService):
             )
             return None
 
-        response = self.client.beta.chat.completions.parse(
+        response = self.client.chat.completions.create(
             model=self.settings.llm_model,
             messages=[{"role": "user", "content": prompt}],
-            response_format=response_model,
+            response_format={"type": "json_object"},
         )
 
-        parsed_response = response.choices[0].message.parsed
-        logger.info(f"Generated response: {parsed_response}")
+        content = response.choices[0].message.content
+        logger.info(f"Generated response: {content}")
 
-        if parsed_response is None:
+        if content is None:
             logger.warning("Received None response from OpenAI")
             return None
 
         try:
-            validated_response = response_model(**parsed_response.model_dump())
-            if all(
-                value is None
-                for value in validated_response.model_dump().values()
-            ):
-                logger.info("All fields in the response are None")
-                return None
-            return validated_response
-        except ValueError as e:
-            logger.error(f"Error validating response: {e}")
+            # Parse the response into the expected model
+            parsed_response = response_model.model_validate_json(content)
+            return parsed_response
+        except Exception as e:
+            logger.error(f"Error parsing response: {e}")
             return None
 
     async def decompose_query(self, query: str) -> dict[str, Any]:
